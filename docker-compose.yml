@@ -1,0 +1,29 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      WORKERS: "2"
+      JOB_TTL_SECONDS: "7200"
+      STATS_TOKEN: ${STATS_TOKEN:-}
+    volumes:
+      - data:/data
+    mem_limit: 3g
+    # Not published: only reachable through Caddy.
+
+  caddy:
+    image: caddy:2.8
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy:/data
+    depends_on: [app]
+
+volumes:
+  data:
+  caddy:
